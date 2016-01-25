@@ -1,0 +1,35 @@
+= Description
+
+A [[https://www.flickr.com/groups/|Flickr group]] image viewer.
+This package allows you to display random images from a selected
+Flickr group. It will show who took the picture as well as its
+description.  
+When using this visualization make sure to only display images
+according to the [[https://www.flickr.com/services/api/tos/|Flickr terms of use]].
+
+//This visualizationuses the Flickr API but is not endorsed or certified by Flickr.//
+
+= Settings
+
+== Display Time (display_time)
+
+How long should each image be displayed. The default is 30 seconds
+which should give the viewer enough time to examine each image.
+
+== Switch Time (switch_time)
+
+Selects the duration of the fade to black effect that happens between media
+files. You can choose from a set of different durations ranging from Instantly
+(the is no visible effect) to 0.8 seconds.
+
+== Ken Burns effect for images (kenburns)
+
+Uses the [[https://en.wikipedia.org/wiki/Ken_Burns_effect|Ken Burns effect]] for
+all images displayed.  Each image will slowly pan and zoom while it is
+displayed. The movement is chosen randomly from a predefined set.
+
+== Flickr Setup
+
+Use the input files to enter group name or a query. Press //enter// or click on
+//Search// to search available groups. Select the group you want to use, then
+click on //Save//.

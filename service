@@ -1,0 +1,115 @@
+#!/usr/bin/python
+import sys, os
+import random
+import time
+import json
+import requests
+
+from hosted import CONFIG
+
+CONFIG.restart_on_update()
+FLICKR = CONFIG['flickr']
+
+MAX_PHOTOS = 40
+
+def cleanup():
+    for name in os.listdir("."):
+        if name.startswith("photo-"):
+            os.unlink(name)
+
+def log(msg):
+    print >>sys.stderr, msg
+
+def get_photos(group_id, page, per_page=20):
+    photos = requests.get("https://api.flickr.com/services/rest/", params = dict(
+        api_key = FLICKR['api_key'],
+        method = "flickr.groups.pools.getPhotos",
+        format = "json",
+        nojsoncallback = 1,
+
+        group_id = group_id,
+        per_page = per_page,
+        page = page,
+    )).json()['photos']
+
+    def transform(photo):
+        photo['urls'] = [
+            "https://farm%s.staticflickr.com/%s/%s_%s%s.jpg" % (
+                photo['farm'], photo['server'], photo['id'], photo['secret'], suffix
+            ) for suffix in ('_h', '_b', '_z')
+        ]
+        return photo
+
+    pages = photos['pages']
+    photos = [
+        transform(photo)
+        for photo in
+        photos['photo']
+    ]
+
+    return pages, photos
+
+def add_photo(info, photo_data):
+    photos = sorted(name for name in os.listdir(".") if name.startswith("photo-") and name.endswith(".jpg"))
+    while len(photos) >= MAX_PHOTOS:
+        try:
+            os.unlink(photos[0])
+            os.unlink(photos[0].replace(".jpg", ".json"))
+            photos.pop(0)
+        except:
+            pass
+    basename = "photo-%012d-%s" % (time.time(), info['id'])
+    info['stored'] = time.time()
+    info['jpg'] = "%s.jpg" % basename 
+    with file("%s.json" % basename, "wb") as out:
+        json.dump(info, out)
+    with file("%s.jpg" % basename, "wb") as out:
+        out.write(photo_data)
+
+def get_user_info(user_id):
+    person = requests.get("https://api.flickr.com/services/rest/", params = dict(
+        api_key = FLICKR['api_key'],
+        method = "flickr.people.getInfo",
+        format = "json",
+        nojsoncallback = 1,
+
+        user_id = user_id,
+    )).json()['person']
+    if 'realname' in person:
+        name = person['realname']['_content']
+    elif 'username' in person:
+        name = person['username']['_content']
+    else:
+        name = "?"
+
+    return dict(
+        profile = person['profileurl']['_content'],
+        name = name,
+    )
+
+def main():
+    cleanup()
+    pages = 1
+    while 1:
+        page = random.randint(1, max(1, pages-1))
+        pages, photos = get_photos(FLICKR['group'], page, per_page=10)
+        log("%d pages available" % pages)
+        for photo in photos:
+            for url in photo['urls']:
+                log("trying to fetch %s" % url)
+                r = requests.get(url, allow_redirects=False)
+                log("status code is %d" % r.status_code)
+                if r.status_code == 200:
+                    break
+                time.sleep(1)
+            else:
+                log("couldn't find a usable image")
+                continue
+            photo['user_info'] = get_user_info(photo['owner'])
+            add_photo(photo, r.content)
+            time.sleep(3)
+        log("fetch cycle complete. waiting")
+        time.sleep(120)
+
+if __name__ == "__main__":
+    main()
