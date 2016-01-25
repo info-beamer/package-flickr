@@ -7,7 +7,7 @@ description.
 When using this visualization make sure to only display images
 according to the [[https://www.flickr.com/services/api/tos/|Flickr terms of use]].
 
-//This visualizationuses the Flickr API but is not endorsed or certified by Flickr.//
+//This visualization uses the Flickr API but is not endorsed or certified by Flickr.//
 
 = Settings
 
