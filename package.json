@@ -2,5 +2,6 @@
     "name": "Flickr Image Group Viewer",
     "author": "fw@dividuum.de",
     "desc": "Shows flickr group images in a rotation",
-    "repository": "https://github.com/info-beamer/package-flickr"
+    "repository": "https://github.com/info-beamer/package-flickr",
+    "lifecycle": "obsoleted"
 }
